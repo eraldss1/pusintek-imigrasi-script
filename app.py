@@ -19,6 +19,10 @@ if __name__ == "__main__":
     old_server_object = getTableauObject(old_server, old_server_auth, tree)
 
     for pre, _, node in RenderTree(old_server_object):
-        print("%s%s" % (pre, f"{node.name}"))
-
-    # print(RenderTree(old_server_object).by_attr("id"))
+        if node.type=="Site":
+            print("%s%s" % (pre, f"{node.name}"))
+        elif node.type=="Project":
+            print("%s%s" % (pre, f"{node.name}"))
+        elif node.type=="Workbook":
+            print("%s%s" % (pre, f"{node.name}"))
+    #print(RenderTree(old_server_object).by_attr("id"))

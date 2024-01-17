@@ -19,7 +19,6 @@ def placeWorkbooks(server: TSC.Server, root):
             parent=parent_node
         )
 
-
 def recurseProjects(server: TSC.Server, parent):
     req_options = TSC.RequestOptions()
     req_options.filter.add(
