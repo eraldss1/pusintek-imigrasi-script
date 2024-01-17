@@ -19,6 +19,7 @@ def placeWorkbooks(server: TSC.Server, root):
             parent=parent_node
         )
 
+
 def recurseProjects(server: TSC.Server, parent):
     req_options = TSC.RequestOptions()
     req_options.filter.add(
@@ -38,7 +39,7 @@ def recurseProjects(server: TSC.Server, parent):
             type="Project",
             id=project.id,
             name=project.name,
-            parent_id="",
+            parent_id=project.parent_id,
             parent=parent
         )
 
@@ -66,7 +67,7 @@ def getTableauObject(server: TSC.Server, authentication: TSC.TableauAuth, root: 
                         type="Project",
                         id=project.id,
                         name=project.name,
-                        parent_id="",
+                        parent_id=project.parent_id,
                         parent=nodesite
                     )
 
