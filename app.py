@@ -1,10 +1,20 @@
 import os
 import tableauserverclient as TSC
 
-from anytree import AnyNode, RenderTree, Walker
+from anytree import AnyNode, RenderTree, Walker, util
 from dotenv import load_dotenv
 from utils.get_tableau_object_anytree import getTableauObject
+from utils.project_action import createProject, deleteAllProjects
 from utils.site_action import createSite, isSiteExist
+
+
+def printTree(node: AnyNode):
+    for pre, _, node in RenderTree(node):
+        if node.type == "Workbook":
+            continue
+        print("%s%s" % (pre, f"{node.name}"))
+    print()
+
 
 if __name__ == "__main__":
     load_dotenv()
@@ -19,6 +29,7 @@ if __name__ == "__main__":
 
     old_tree = AnyNode(type="Server", id="1", name="Server Lama")
     old_server_object = getTableauObject(old_server, old_server_auth, old_tree)
+    printTree(old_server_object)
 
     # New server
     new_server_address = os.getenv("NEW_SERVER_ADDRESS")
@@ -30,20 +41,28 @@ if __name__ == "__main__":
 
     new_tree = AnyNode(type="Server", id="1", name="Server Baru")
     new_server_object = getTableauObject(new_server, new_server_auth, new_tree)
+    print("Before deletion:")
+    printTree(new_server_object)
 
+    # Delete all project on all sites
+    deleteAllProjects(new_server, new_server_auth, new_server_object)
+
+    new_tree = AnyNode(type="Server", id="1", name="Server Baru")
+    new_server_object = getTableauObject(new_server, new_server_auth, new_tree)
+    print("After deletion:")
+    printTree(new_server_object)
+
+    # Iterate base on type
     for pre, _, node in RenderTree(old_server_object):
         if node.type == "Site":
             if not isSiteExist(node.name, new_server_object):
-                # pass
                 print(f"Site '{node.name}' not exist in new server.")
                 createSite(new_server, new_server_auth, node.name)
 
-        # elif node.type == "Project":
-        #     print("%s%s" % (pre, f"{node.name}"))
-        # elif node.type == "Workbook":
-        #     print("%s%s" % (pre, f"{node.name}"))
+        if node.type == "Project" and node.name != "Release":
+            createProject(new_server, new_server_auth, node)
 
-    for pre, _, node in RenderTree(new_server_object):
-        print("%s%s" % (pre, f"{node.name}"))
-
-    # print(RenderTree(old_server_object).by_attr("id"))
+    new_tree = AnyNode(type="Server", id="1", name="Server Baru")
+    new_server_object = getTableauObject(new_server, new_server_auth, new_tree)
+    print("After creation:")
+    printTree(new_server_object)
