@@ -1,7 +1,7 @@
 import tableauserverclient as TSC
 import time
 
-from anytree import util, AnyNode, findall, RenderTree
+from anytree import util, AnyNode, RenderTree
 
 
 def deleteAllProjects(server: TSC.Server, authentication: TSC.TableauAuth, server_object):
