@@ -15,6 +15,7 @@ def placeWorkbooks(server: TSC.Server, root):
             type="Workbook",
             id=workbook.id,
             name=workbook.name,
+            size=workbook.size,
             parent_id=workbook.id,
             parent=parent_node
         )

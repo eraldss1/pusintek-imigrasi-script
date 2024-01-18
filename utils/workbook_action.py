@@ -1,6 +1,7 @@
 import tableauserverclient as TSC
-from anytree import util, AnyNode, findall, RenderTree
+import os
 
+from anytree import util, AnyNode, findall, RenderTree
 from utils.get_tableau_object_anytree import getTableauObject
 
 
@@ -12,7 +13,7 @@ def migrateWorkbook(server: TSC.Server, authentication: TSC.TableauAuth, workboo
     source_parent_ancestor = util.commonancestors(source_parent)
     source_parent_ancestor = [x.name for x in source_parent_ancestor][1:]
 
-    print(source_parent_ancestor)
+    print("Source project path:", source_parent_ancestor)
 
     # New server object
     tree = AnyNode(type="Server", id="1", name="Server Baru")
@@ -48,7 +49,19 @@ def migrateWorkbook(server: TSC.Server, authentication: TSC.TableauAuth, workboo
                 break
 
         print("Target project:", target_project.name)
+        print("Target project id:", target_project.id, "\n")
 
         # Migrate workbook
         # new_woorkbook = TSC.WorkbookItem(name=source_workbook.name, project_id=target_project.id)
         # new_woorkbook = server.workbooks.publish(new_woorkbook,"NEW WORKBOOK PATH", 'CreateNew')
+
+
+def downloadWorkbook(server: TSC.Server, authentication: TSC.TableauAuth, workbook_node: AnyNode):
+    with server.auth.sign_in(authentication):
+        print(f'Downloading "{workbook_node.name}"')
+        print(f'Size: {workbook_node.size * 1024}kb')
+        download_workbook = server.workbooks.download(
+            workbook_node.id,
+            filepath='temp/'
+        )
+        print("Downloaded.\n")
