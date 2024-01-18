@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from utils.get_tableau_object_anytree import getTableauObject
 from utils.project_action import createProject, deleteAllProjects
 from utils.site_action import createSite, isSiteExist
+from utils.workbook_action import migrateWorkbook
 
 
 def printTree(node: AnyNode):
@@ -61,6 +62,9 @@ if __name__ == "__main__":
 
         if node.type == "Project" and node.name != "Release":
             createProject(new_server, new_server_auth, node)
+
+        if node.type == "Workbook":
+            migrateWorkbook(new_server, new_server_auth, node)
 
     new_tree = AnyNode(type="Server", id="1", name="Server Baru")
     new_server_object = getTableauObject(new_server, new_server_auth, new_tree)
