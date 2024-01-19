@@ -2,6 +2,7 @@ import tableauserverclient as TSC
 import time
 
 from anytree import util, AnyNode, RenderTree
+from utils.get_tableau_object_anytree import getTableauObject
 
 
 def deleteAllProjects(server: TSC.Server, authentication: TSC.TableauAuth):
@@ -12,12 +13,27 @@ def deleteAllProjects(server: TSC.Server, authentication: TSC.TableauAuth):
             sites, pagination_item = server.sites.get()
             for site in sites:
                 server.auth.switch_site(site)
+
+                req_options = TSC.RequestOptions()
+                req_options.filter.add(
+                    TSC.Filter(
+                        TSC.RequestOptions.Field.Name,
+                        TSC.RequestOptions.Operator.Equals,
+                        'Release'
+                    )
+                )
+                projects, pagination_item = server.projects.get(
+                    req_options=req_options
+                )
+                parent = projects[0]
+
                 projects, pagination_item = server.projects.get()
                 for project in projects:
-                    if (project.name == 'Release'):
+                    if (project.parent_id == parent.id):
                         server.projects.delete(project.id)
 
         print("New server formatted\n")
+    time.sleep(3)
 
 
 def createProject(server: TSC.Server, authentication: TSC.TableauAuth, project_node: AnyNode):
@@ -62,7 +78,7 @@ def createProject(server: TSC.Server, authentication: TSC.TableauAuth, project_n
 
         new_project = server.projects.create(new_project)
         print("Project created\n")
-        time.sleep(2)
+        time.sleep(3)
 
 
 def isProjectExist(old_server_object: AnyNode, new_server_object: AnyNode, project_node):

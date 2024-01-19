@@ -6,7 +6,12 @@ from anytree import util, AnyNode, findall, RenderTree
 from utils.get_tableau_object_anytree import getTableauObject
 
 
-def migrateWorkbook(server: TSC.Server, authentication: TSC.TableauAuth, workbook_node: AnyNode):
+def migrateWorkbook(
+    server: TSC.Server,
+    authentication: TSC.TableauAuth,
+    workbook_node: AnyNode,
+    file_path
+):
     source_workbook = workbook_node
 
     source_site = util.commonancestors(source_workbook)[1]
@@ -50,20 +55,35 @@ def migrateWorkbook(server: TSC.Server, authentication: TSC.TableauAuth, workboo
                 break
 
         print("Target project:", target_project.name)
-        print("Target project id:", target_project.id, "\n")
+        print("Target project id:", target_project.id)
 
+        print("Publising workbook")
         # Migrate workbook
-        # new_woorkbook = TSC.WorkbookItem(name=source_workbook.name, project_id=target_project.id)
-        # new_woorkbook = server.workbooks.publish(new_woorkbook,"NEW WORKBOOK PATH", 'CreateNew')
+        new_woorkbook = TSC.WorkbookItem(
+            name=source_workbook.name,
+            project_id=target_project.id
+        )
+        new_woorkbook = server.workbooks.publish(
+            workbook_item=new_woorkbook,
+            file=file_path,
+            mode='CreateNew',
+            as_job=False,
+        )
+        print('Workbook published\n')
+
+        # Delete file
+        os.remove(file_path)
+        time.sleep(3)
 
 
 def downloadWorkbook(server: TSC.Server, authentication: TSC.TableauAuth, workbook_node: AnyNode):
     with server.auth.sign_in(authentication):
         print(f'Downloading "{workbook_node.name}"')
-        print(f'Size: {workbook_node.size * 1024}kb')
         download_workbook = server.workbooks.download(
             workbook_node.id,
             filepath='temp/'
         )
-        print(f'Downloaded "{workbook_node.name}"\n')
-        time.sleep(5)
+        print(f'Downloaded "{download_workbook}"\n')
+        time.sleep(3)
+
+        return download_workbook

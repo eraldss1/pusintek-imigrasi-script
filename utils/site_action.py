@@ -22,14 +22,14 @@ def createSite(server: TSC.Server, authentication: TSC.TableauAuth, new_site_nam
         )
         new_site = server.sites.create(new_site)
         print(f"{new_site_name} created.\n")
-        time.sleep(2)
+        time.sleep(3)
 
         print(f"Creating 'Release' project in '{new_site_name}'")
         server.auth.switch_site(new_site)
         new_project = TSC.ProjectItem(name='Release')
         new_project = server.projects.create(new_project)
         print("Project created\n")
-        time.sleep(2)
+        time.sleep(3)
 
 
 def process_content_url(input_string):

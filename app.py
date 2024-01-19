@@ -68,30 +68,25 @@ if __name__ == "__main__":
     printTree(new_server_object)
 
     # Delete all project on all sites
-    time.sleep(2)
     deleteAllProjects(new_server, new_server_auth)
 
-    # new_tree = AnyNode(type="Server", id="1", name="Server Baru")
-    # new_server_object = getTableauObject(new_server, new_server_auth, new_tree)
-    # print("After deletion:")
-    # printTree(new_server_object)
+    new_tree = AnyNode(type="Server", id="1", name="Server Baru")
+    new_server_object = getTableauObject(new_server, new_server_auth, new_tree)
+    print("After deletion:")
+    printTree(new_server_object)
 
-    # # Iterate base on type
-    # for pre, _, node in RenderTree(old_server_object):
-    #     if node.type == "Site":
-    #         if not isSiteExist(node.name, new_server_object):
-    #             print(f"Site '{node.name}' not exist in new server.")
-    #             createSite(new_server, new_server_auth, node.name)
+    # Iterate base on type
+    for pre, _, node in RenderTree(old_server_object):
+        if node.type == "Site":
+            if not isSiteExist(node.name, new_server_object):
+                print(f"Site '{node.name}' not exist in new server.")
+                createSite(new_server, new_server_auth, node.name)
 
-    #     if node.type == "Project" and node.name != "Release":
-    #         createProject(new_server, new_server_auth, node)
+        if node.type == "Project" and node.name != "Release":
+            createProject(new_server, new_server_auth, node)
 
-    #     if node.type == "Workbook":
-    #         downloadWorkbook(old_server, old_server_auth, node)
-    #         # migrateWorkbook(new_server, new_server_auth, node)
-    #         time.sleep(5)
+        if node.type == "Workbook":
+            file_path = downloadWorkbook(old_server, old_server_auth, node)
+            migrateWorkbook(new_server, new_server_auth, node, file_path)
 
-    # new_tree = AnyNode(type="Server", id="1", name="Server Baru")
-    # new_server_object = getTableauObject(new_server, new_server_auth, new_tree)
-    # print("After creation:")
-    # printTree(new_server_object)
+    print("All action complete")
