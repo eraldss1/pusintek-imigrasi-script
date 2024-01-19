@@ -1,7 +1,8 @@
+from re import findall
 import tableauserverclient as TSC
 
 from anytree import AnyNode
-from anytree import find
+from anytree import search
 
 
 def placeWorkbooks(server: TSC.Server, root):
@@ -9,16 +10,21 @@ def placeWorkbooks(server: TSC.Server, root):
 
     for workbook in workbooks:
         parent_id = workbook.project_id
-        parent_node = find(root, lambda node: node.id == parent_id)
+        parent_node = search.findall(
+            root, lambda node: node.id == parent_id)
+        print(parent_node)
+        # print(workbook.project_id, workbook.name)
 
-        workbookitem = AnyNode(
-            type="Workbook",
-            id=workbook.id,
-            name=workbook.name,
-            size=workbook.size,
-            parent_id=workbook.id,
-            parent=parent_node
-        )
+        # workbookitem = AnyNode(
+        #     type="Workbook",
+        #     id=workbook.id,
+        #     name=workbook.name,
+        #     size=workbook.size,
+        #     parent_id=workbook.id,
+        #     parent=parent_node
+        # )
+
+        # print(workbook.name)
 
 
 def recurseProjects(server: TSC.Server, parent):
@@ -43,6 +49,7 @@ def recurseProjects(server: TSC.Server, parent):
             parent_id=project.parent_id,
             parent=parent
         )
+        print(project.id)
 
         recurseProjects(server, project_node)
 
@@ -74,5 +81,32 @@ def getTableauObject(server: TSC.Server, authentication: TSC.TableauAuth, root: 
 
                     recurseProjects(server, projectitem)
                     placeWorkbooks(server, root)
+
+    return root
+
+
+def getTableauObjectPersonalAccessToken(server: TSC.Server, token: TSC.PersonalAccessTokenAuth, root: AnyNode):
+    with server.auth.sign_in(token):
+
+        nodesite = AnyNode(
+            type="Site",
+            id=server.site_id,
+            name=token.site_id,
+            parent_id="1",
+            parent=root)
+
+        projects, pagination_item = server.projects.get()
+        for project in projects:
+            if (project.parent_id == None and project.name == 'Release'):
+                projectitem = AnyNode(
+                    type="Project",
+                    id=project.id,
+                    name=project.name,
+                    parent_id=project.parent_id,
+                    parent=nodesite
+                )
+
+                recurseProjects(server, projectitem)
+                placeWorkbooks(server, root)
 
     return root
