@@ -6,10 +6,13 @@ from anytree import util, AnyNode, RenderTree
 
 def deleteAllProjects(server: TSC.Server, authentication: TSC.TableauAuth, server_object):
     with server.auth.sign_in(authentication):
+        print("Formatting new server")
         for pre, _, node in RenderTree(server_object):
             if node.type == "Project":
                 if node.parent.name == "Release":
-                    server.projects.delete(node.id)
+                    # server.projects.delete(node.id)
+                    print(node.name, node.id)
+        print("New server formatted\n")
 
 
 def createProject(server: TSC.Server, authentication: TSC.TableauAuth, project_node: AnyNode):
@@ -39,7 +42,7 @@ def createProject(server: TSC.Server, authentication: TSC.TableauAuth, project_n
                 project_node.parent.name
             )
         )
-        print(project_node.parent.name)
+        # print(project_node.parent.name)
 
         projects, pagination_item = server.projects.get(
             req_options=req_options,

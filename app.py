@@ -1,6 +1,7 @@
 import os
 import token
 import tableauserverclient as TSC
+import time
 
 from anytree import AnyNode, RenderTree, Walker, util
 from dotenv import load_dotenv
@@ -12,7 +13,9 @@ from utils.workbook_action import downloadWorkbook, migrateWorkbook
 
 def printTree(node: AnyNode):
     for pre, _, node in RenderTree(node):
-        print("%s%s" % (pre, f"{node.name} {node.id}"))
+        print("%s%s" % (pre, f"{node.name}"))
+        if node.type == "Workbook":
+            print("%s%s" % (pre, f"{node.name}.twbx"))
     print()
 
 
@@ -52,41 +55,41 @@ if __name__ == "__main__":
     )
     printTree(old_server_object)
 
-    # # New server
-    # new_server_address = os.getenv("NEW_SERVER_ADDRESS")
-    # new_server_username = os.getenv("NEW_SERVER_USERNAME")
-    # new_server_password = os.getenv("NEW_SERVER_PASSWORD")
+    # New server
+    new_server_address = os.getenv("NEW_SERVER_ADDRESS")
+    new_server_username = os.getenv("NEW_SERVER_USERNAME")
+    new_server_password = os.getenv("NEW_SERVER_PASSWORD")
 
-    # new_server = TSC.Server(new_server_address, use_server_version=True)
-    # new_server_auth = TSC.TableauAuth(new_server_username, new_server_password)
+    new_server = TSC.Server(new_server_address, use_server_version=True)
+    new_server_auth = TSC.TableauAuth(new_server_username, new_server_password)
 
-    # new_tree = AnyNode(type="Server", id="1", name="Server Baru")
-    # new_server_object = getTableauObject(new_server, new_server_auth, new_tree)
-    # print("Before deletion:")
-    # printTree(new_server_object)
+    new_tree = AnyNode(type="Server", id="1", name="Server Baru")
+    new_server_object = getTableauObject(new_server, new_server_auth, new_tree)
+    printTree(new_server_object)
 
-    # # Delete all project on all sites
-    # deleteAllProjects(new_server, new_server_auth, new_server_object)
+    # Delete all project on all sites
+    time.sleep(2)
+    deleteAllProjects(new_server, new_server_auth, new_server_object)
 
     # new_tree = AnyNode(type="Server", id="1", name="Server Baru")
     # new_server_object = getTableauObject(new_server, new_server_auth, new_tree)
     # print("After deletion:")
     # printTree(new_server_object)
 
-    # Iterate base on type
-    for pre, _, node in RenderTree(old_server_object):
-        # if node.type == "Site":
-        #     if not isSiteExist(node.name, new_server_object):
-        #         print(f"Site '{node.name}' not exist in new server.")
-        #         createSite(new_server, new_server_auth, node.name)
+    # # Iterate base on type
+    # for pre, _, node in RenderTree(old_server_object):
+    #     if node.type == "Site":
+    #         if not isSiteExist(node.name, new_server_object):
+    #             print(f"Site '{node.name}' not exist in new server.")
+    #             createSite(new_server, new_server_auth, node.name)
 
-        # if node.type == "Project" and node.name != "Release":
-        #     createProject(new_server, new_server_auth, node)
+    #     if node.type == "Project" and node.name != "Release":
+    #         createProject(new_server, new_server_auth, node)
 
-        if node.type == "Workbook":
-            # migrateWorkbook(new_server, new_server_auth, node)
-            # downloadWorkbook(old_server, old_server_auth, node)
-            print(node.name, "twbx")
+    #     if node.type == "Workbook":
+    #         downloadWorkbook(old_server, old_server_auth, node)
+    #         # migrateWorkbook(new_server, new_server_auth, node)
+    #         time.sleep(5)
 
     # new_tree = AnyNode(type="Server", id="1", name="Server Baru")
     # new_server_object = getTableauObject(new_server, new_server_auth, new_tree)

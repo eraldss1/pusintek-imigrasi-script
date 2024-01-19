@@ -1,30 +1,23 @@
 from re import findall
 import tableauserverclient as TSC
 
-from anytree import AnyNode
-from anytree import search
+from anytree import AnyNode, RenderTree
+from anytree import find
 
 
 def placeWorkbooks(server: TSC.Server, root):
-    workbooks, pagination_item = server.workbooks.get()
-
-    for workbook in workbooks:
+    for workbook in TSC.Pager(server.workbooks):
         parent_id = workbook.project_id
-        parent_node = search.findall(
-            root, lambda node: node.id == parent_id)
-        print(parent_node)
-        # print(workbook.project_id, workbook.name)
+        parent_node = find(root, lambda node: node.id == parent_id)
 
-        # workbookitem = AnyNode(
-        #     type="Workbook",
-        #     id=workbook.id,
-        #     name=workbook.name,
-        #     size=workbook.size,
-        #     parent_id=workbook.id,
-        #     parent=parent_node
-        # )
-
-        # print(workbook.name)
+        workbookitem = AnyNode(
+            type="Workbook",
+            id=workbook.id,
+            name=workbook.name,
+            size=workbook.size,
+            parent_id=workbook.id,
+            parent=parent_node
+        )
 
 
 def recurseProjects(server: TSC.Server, parent):
@@ -49,7 +42,6 @@ def recurseProjects(server: TSC.Server, parent):
             parent_id=project.parent_id,
             parent=parent
         )
-        print(project.id)
 
         recurseProjects(server, project_node)
 
@@ -107,6 +99,6 @@ def getTableauObjectPersonalAccessToken(server: TSC.Server, token: TSC.PersonalA
                 )
 
                 recurseProjects(server, projectitem)
-                placeWorkbooks(server, root)
+                placeWorkbooks(server, nodesite)
 
     return root

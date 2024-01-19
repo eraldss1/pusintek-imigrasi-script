@@ -1,5 +1,6 @@
 import tableauserverclient as TSC
 import os
+import time
 
 from anytree import util, AnyNode, findall, RenderTree
 from utils.get_tableau_object_anytree import getTableauObject
@@ -64,4 +65,5 @@ def downloadWorkbook(server: TSC.Server, authentication: TSC.TableauAuth, workbo
             workbook_node.id,
             filepath='temp/'
         )
-        print("Downloaded.\n")
+        print(f'Downloaded "{workbook_node.name}"\n')
+        time.sleep(5)
