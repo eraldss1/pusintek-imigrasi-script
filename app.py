@@ -69,7 +69,7 @@ if __name__ == "__main__":
 
     # Delete all project on all sites
     time.sleep(2)
-    deleteAllProjects(new_server, new_server_auth, new_server_object)
+    deleteAllProjects(new_server, new_server_auth)
 
     # new_tree = AnyNode(type="Server", id="1", name="Server Baru")
     # new_server_object = getTableauObject(new_server, new_server_auth, new_tree)

@@ -4,14 +4,19 @@ import time
 from anytree import util, AnyNode, RenderTree
 
 
-def deleteAllProjects(server: TSC.Server, authentication: TSC.TableauAuth, server_object):
+def deleteAllProjects(server: TSC.Server, authentication: TSC.TableauAuth):
     with server.auth.sign_in(authentication):
         print("Formatting new server")
-        for pre, _, node in RenderTree(server_object):
-            if node.type == "Project":
-                if node.parent.name == "Release":
-                    # server.projects.delete(node.id)
-                    print(node.name, node.id)
+
+        with server.auth.sign_in(authentication):
+            sites, pagination_item = server.sites.get()
+            for site in sites:
+                server.auth.switch_site(site)
+                projects, pagination_item = server.projects.get()
+                for project in projects:
+                    if (project.name == 'Release'):
+                        server.projects.delete(project.id)
+
         print("New server formatted\n")
 
 
