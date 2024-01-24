@@ -11,6 +11,33 @@ def isSiteExist(old_site_name, new_server_object):
     return False
 
 
+def checkRelease(server: TSC.Server, authentication: TSC.TableauAuth, site_name):
+    with server.auth.sign_in(authentication):
+        sites, site_pagination = server.sites.get()
+        for site in sites:
+            if site.name == site_name:
+                server.auth.switch_site(site)
+
+                req_options = TSC.RequestOptions()
+                req_options.filter.add(
+                    TSC.Filter(
+                        TSC.RequestOptions.Field.Name,
+                        TSC.RequestOptions.Operator.Equals,
+                        "Release"
+                    )
+                )
+                projects, pagination_item = server.projects.get(
+                    req_options=req_options,
+                )
+
+                if not len(projects) > 0:
+                    new_project = TSC.ProjectItem(
+                        name="Release",
+                    )
+                    new_project = server.projects.create(new_project)
+                    time.sleep(3)
+
+
 def createSite(server: TSC.Server, authentication: TSC.TableauAuth, new_site_name):
     with server.auth.sign_in(authentication):
         print(f"Creating '{new_site_name}' in new Server.")
@@ -24,12 +51,7 @@ def createSite(server: TSC.Server, authentication: TSC.TableauAuth, new_site_nam
         print(f"{new_site_name} created.\n")
         time.sleep(3)
 
-        print(f"Creating 'Release' project in '{new_site_name}'")
-        server.auth.switch_site(new_site)
-        new_project = TSC.ProjectItem(name='Release')
-        new_project = server.projects.create(new_project)
-        print("Project created\n")
-        time.sleep(3)
+    checkRelease(server, authentication, new_site.name)
 
 
 def process_content_url(input_string):

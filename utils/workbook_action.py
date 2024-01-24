@@ -4,13 +4,15 @@ import time
 
 from anytree import util, AnyNode, findall, RenderTree
 from utils.get_tableau_object_anytree import getTableauObject
+from utils.project_action import changePermissions
 
 
 def migrateWorkbook(
     server: TSC.Server,
     authentication: TSC.TableauAuth,
     workbook_node: AnyNode,
-    file_path
+    file_path,
+    old_tree_group: AnyNode
 ):
     source_workbook = workbook_node
 
@@ -57,7 +59,8 @@ def migrateWorkbook(
         print("Target project:", target_project.name)
         print("Target project id:", target_project.id)
 
-        print("Publising workbook")
+        print("Publishing workbook")
+
         # Migrate workbook
         new_woorkbook = TSC.WorkbookItem(
             name=source_workbook.name,
@@ -75,9 +78,26 @@ def migrateWorkbook(
         os.remove(file_path)
         time.sleep(3)
 
+        # Check if parent release maka set permissions
+        if target_project.name == "Release":
+            changePermissions(target_site, new_woorkbook, source_workbook.permission,
+                              server, old_tree_group, 7)
+            print("Finish Update Project Default Workbook Permissions\n")
+
 
 def downloadWorkbook(server: TSC.Server, authentication: TSC.TableauAuth, workbook_node: AnyNode):
+    source_site = util.commonancestors(workbook_node)[1]
+
     with server.auth.sign_in(authentication):
+        sites, site_pagination = server.sites.get()
+
+        target_site = None
+        for site in sites:
+            if site.name == source_site.name:
+                target_site = site
+                break
+        server.auth.switch_site(target_site)
+
         print(f'Downloading "{workbook_node.name}"')
         download_workbook = server.workbooks.download(
             workbook_node.id,
