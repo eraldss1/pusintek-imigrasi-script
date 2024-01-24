@@ -1,3 +1,4 @@
+import logging
 import os
 import tableauserverclient as TSC
 
@@ -9,17 +10,31 @@ from utils.project_action import createProject, deleteAllProjects
 from utils.site_action import checkRelease, createSite, isSiteExist
 from utils.workbook_action import downloadWorkbook, migrateWorkbook
 
+logging.basicConfig(
+    filename='migration.log',
+    encoding='utf-8',
+    format='%(levelname)s\t; %(asctime)s; %(message)s',
+    level=logging.INFO
+)
+
 
 def printTree(node: AnyNode, with_status: bool = False):
     for pre, _, node in RenderTree(node):
         if with_status:
-            print("%s%s" % (pre, f"{node.name} - {node.status}"))
             if node.type == "Workbook":
                 print("%s%s" % (pre, f"{node.name}.twbx - {node.status}"))
+                logging.info("%s%s" % (pre, f"{node.name} - {node.status}"))
+            else:
+                print("%s%s" % (pre, f"{node.name} - {node.status}"))
+                logging.info("%s%s" % (pre, f"{node.name} - {node.status}"))
+
         else:
-            print("%s%s" % (pre, f"{node.name}"))
             if node.type == "Workbook":
                 print("%s%s" % (pre, f"{node.name}.twbx"))
+                logging.info("%s%s" % (pre, f"{node.name}"))
+            else:
+                print("%s%s" % (pre, f"{node.name}"))
+                logging.info("%s%s" % (pre, f"{node.name}"))
     print()
 
 
@@ -81,6 +96,7 @@ if __name__ == "__main__":
     new_tree = AnyNode(type="Server", id=None, name=new_server_address)
     new_server_object = getTableauObject(new_server, new_server_auth, new_tree)
     print("After deletion:")
+    logging.info("After deletion:")
     printTree(new_server_object)
 
     # Iterate base on type
@@ -88,6 +104,8 @@ if __name__ == "__main__":
         if node.type == "Site":
             if not isSiteExist(node.name, new_server_object):
                 print(f"Site '{node.name}' not exist in new server.")
+                logging.info(f"Site '{node.name}' not exist in new server.")
+
                 createSite(new_server, new_server_auth, node.name)
                 node.status = "OK"
             else:
@@ -107,7 +125,10 @@ if __name__ == "__main__":
                 node.status = "OK"
             except Exception as e:
                 print("Workbook not published.")
+                logging.error("Workbook not published.")
+
                 print(e)
+                logging.error(e)
                 node.status = "Error"
 
     # # print()
@@ -117,6 +138,8 @@ if __name__ == "__main__":
     new_tree = AnyNode(type="Server", id=None, name=new_server_address)
     new_server_object = getTableauObject(new_server, new_server_auth, new_tree)
     print("After migration:")
+    logging.info("After migration:")
     printTree(new_server_object)
 
     print("All action complete")
+    logging.info("All action complete")
