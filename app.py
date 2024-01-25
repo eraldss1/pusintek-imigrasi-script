@@ -3,6 +3,7 @@ import os
 import tableauserverclient as TSC
 
 from anytree import AnyNode, RenderTree
+from datetime import date
 from dotenv import load_dotenv
 from utils.get_tableau_object_anytree import getTableauObject, getTableauGroup
 from utils.group_action import createGroup
@@ -10,12 +11,18 @@ from utils.project_action import createProject, deleteAllProjects
 from utils.site_action import checkRelease, createSite, isSiteExist
 from utils.workbook_action import downloadWorkbook, migrateWorkbook
 
-logging.basicConfig(
-    filename='migration.log',
-    encoding='utf-8',
-    format='%(levelname)s\t; %(asctime)s; %(message)s',
-    level=logging.INFO
-)
+
+def config_logger():
+    if not os.path.exists("log"):
+        os.mkdir("log")
+
+    today = date.today()
+    logging.basicConfig(
+        filename="log/" + today + '.log',
+        encoding='utf-8',
+        format='%(levelname)s\t; %(asctime)s; %(message)s',
+        level=logging.INFO
+    )
 
 
 def printTree(node: AnyNode, with_status: bool = False):
@@ -40,6 +47,7 @@ def printTree(node: AnyNode, with_status: bool = False):
 
 if __name__ == "__main__":
     load_dotenv()
+    config_logger()
 
     # Old server
     old_server_address = os.getenv("OLD_SERVER_ADDRESS")
