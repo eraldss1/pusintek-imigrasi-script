@@ -71,6 +71,7 @@ def migrateWorkbook(
             file=file_path,
             mode='CreateNew',
             as_job=False,
+            skip_connection_check=True,
         )
         print('Workbook published\n')
 
@@ -104,7 +105,8 @@ def downloadWorkbook(server: TSC.Server, authentication: TSC.TableauAuth, workbo
         print(f'Downloading "{workbook_node.name}"')
         download_workbook = server.workbooks.download(
             workbook_node.id,
-            filepath='temp/'
+            filepath='temp/',
+
         )
         print(f'Downloaded "{download_workbook}"\n')
         time.sleep(3)
