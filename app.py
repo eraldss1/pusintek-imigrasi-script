@@ -98,6 +98,8 @@ def printLastLog():
 
 if __name__ == "__main__":
     load_dotenv()
+    config_log()
+
     # Old server
     old_server_address = os.getenv("OLD_SERVER_ADDRESS")
     old_server_username = os.getenv("OLD_SERVER_USERNAME")
