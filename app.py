@@ -1,6 +1,7 @@
 import logging
 import os
 import tableauserverclient as TSC
+import time
 
 from anytree import AnyNode, RenderTree
 from datetime import date
@@ -12,12 +13,19 @@ from utils.site_action import createSite, isSiteExist
 from utils.workbook_action import downloadWorkbook, migrateWorkbook
 from datetime import datetime
 
-logging.basicConfig(
-    filename=f'log/migration_{datetime.now().date()}.log',
-    encoding='utf-8',
-    format='%(levelname)s\t; %(asctime)s; %(message)s',
-    level=logging.INFO
-)
+
+def config_log():
+    if not os.path.exists("temp"):
+        os.mkdir("temp")
+        time.sleep(2)
+
+    logging.basicConfig(
+        filename=f'log/migration_{datetime.now().date()}.log',
+        encoding='utf-8',
+        format='%(levelname)s\t; %(asctime)s; %(message)s',
+        level=logging.INFO
+    )
+
 
 start_time = datetime.now()
 site_success = 0
@@ -195,9 +203,9 @@ if __name__ == "__main__":
                 logging.error(e)
                 node.status = "Error"
 
-    # # print()
-    # # print("Migration status:")
-    # # printTree(old_server_object, with_status=True)
+    # print()
+    # print("Migration status:")
+    # printTree(old_server_object, with_status=True)
 
     new_tree = AnyNode(type="Server", id=None, name=new_server_address)
 
