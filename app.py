@@ -3,6 +3,7 @@ import os
 import tableauserverclient as TSC
 
 from anytree import AnyNode, RenderTree
+from datetime import date
 from dotenv import load_dotenv
 from utils.get_tableau_object_anytree import getTableauObject, getTableauGroup
 from utils.group_action import createGroup
@@ -29,6 +30,7 @@ workbook_success = 0
 workbook_failed = 0
 end_time = None
 
+
 def printTree(node: AnyNode, with_status: bool = False):
     for pre, _, node in RenderTree(node):
         if with_status:
@@ -47,42 +49,44 @@ def printTree(node: AnyNode, with_status: bool = False):
                 print("%s%s" % (pre, f"{node.name}"))
                 logging.info("%s%s" % (pre, f"{node.name}"))
     print()
-    
+
+
 def printLastLog():
-    
+
     print("After migration:")
-    
+
     logging.info("After migration:")
-    
+
     printTree(new_server_object)
-    
+
     end_time = datetime.now()
-    
+
     delta = end_time - start_time
-    
+
     logging.info(f"Site berhasil ditambahkan: {site_success}")
-    
+
     logging.info(f"Site gagal ditambahkan: {site_failed}")
-    
+
     logging.info(f"Group berhasil ditambahkan: {group_success}")
-    
+
     logging.info(f"Group gagal ditambahkan: {group_failed}")
-    
+
     logging.info(f"Project berhasil ditambahkan: {project_success}")
-    
+
     logging.info(f"Project gagal ditambahkan: {project_failed}")
-    
+
     logging.info(f"Workbook berhasil terupload: {workbook_success}")
-    
+
     logging.info(f"Workbook gagal terupload: {workbook_failed}")
-    
+
     print(f"Duration: {delta}")
-    
+
     logging.info(f"Duration: {delta}")
-    
+
     print("All action complete")
-    
+
     logging.info("All action complete")
+
 
 if __name__ == "__main__":
     load_dotenv()
@@ -99,9 +103,9 @@ if __name__ == "__main__":
 
     old_tree = AnyNode(type="Server", id=None,
                        name=old_server_address, status="OK")
-    
+
     old_server_object = getTableauObject(old_server, old_server_auth, old_tree)
-    
+
     printTree(old_server_object)
 
     # Token
@@ -153,24 +157,27 @@ if __name__ == "__main__":
                 print(f"Site '{node.name}' not exist in new server.")
                 logging.info(f"Site '{node.name}' not exist in new server.")
                 try:
-                    createSite(new_server, new_server_auth, node.name, site_success,site_failed, logging)
+                    createSite(new_server, new_server_auth, node.name,
+                               site_success, site_failed, logging)
                     node.status = "OK"
-                    site_success+=1
+                    site_success += 1
                 except Exception as e:
-                    site_failed+=1
+                    site_failed += 1
 
-            group_info = createGroup(new_server, new_server_auth, node, old_tree_group,group_success,group_failed,logging)
+            group_info = createGroup(
+                new_server, new_server_auth, node, old_tree_group, group_success, group_failed, logging)
             group_success = group_info[0]
             group_failed = group_info[1]
 
         elif node.type == "Project" and node.name.lower() != "default":
             try:
-                createProject(new_server, new_server_auth, node, old_tree_group,project_success,project_failed, logging)
+                createProject(new_server, new_server_auth, node,
+                              old_tree_group, project_success, project_failed, logging)
                 node.status = "OK"
-                project_success+=1
+                project_success += 1
             except Exception as e:
                 print("ada error disini :", node.name)
-                project_failed+=1    
+                project_failed += 1
 
         elif node.type == "Workbook":
             try:
@@ -178,9 +185,9 @@ if __name__ == "__main__":
                 migrateWorkbook(new_server, new_server_auth,
                                 node, file_path, old_tree_group)
                 node.status = "OK"
-                workbook_success+=1
+                workbook_success += 1
             except Exception as e:
-                workbook_failed+=1
+                workbook_failed += 1
                 print("Workbook not published.")
                 logging.error("Workbook not published.")
 
@@ -193,7 +200,7 @@ if __name__ == "__main__":
     # # printTree(old_server_object, with_status=True)
 
     new_tree = AnyNode(type="Server", id=None, name=new_server_address)
-    
+
     new_server_object = getTableauObject(new_server, new_server_auth, new_tree)
 
     printLastLog()

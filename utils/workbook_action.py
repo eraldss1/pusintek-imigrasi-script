@@ -98,6 +98,9 @@ def downloadWorkbook(server: TSC.Server, authentication: TSC.TableauAuth, workbo
                 break
         server.auth.switch_site(target_site)
 
+        if not os.path.exists("temp"):
+            os.mkdir("temp")
+
         print(f'Downloading "{workbook_node.name}"')
         download_workbook = server.workbooks.download(
             workbook_node.id,
