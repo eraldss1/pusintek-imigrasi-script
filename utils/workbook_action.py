@@ -78,11 +78,11 @@ def migrateWorkbook(
         os.remove(file_path)
         time.sleep(3)
 
-        # Check if parent release maka set permissions
-        if target_project.name == "Release":
-            changePermissions(target_site, new_woorkbook, source_workbook.permission,
-                              server, old_tree_group, 7)
-            print("Finish Update Project Default Workbook Permissions\n")
+        # Check if parent release maka set permissions (saat ini tidak perlu karena membaca seluruh project)
+        # if target_project.name == "Release":
+        #     changePermissions(target_site, new_woorkbook, source_workbook.permission,
+        #                       server, old_tree_group, 7)
+        #     print("Finish Update Project Default Workbook Permissions\n")
 
 
 def downloadWorkbook(server: TSC.Server, authentication: TSC.TableauAuth, workbook_node: AnyNode):

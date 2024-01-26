@@ -11,19 +11,38 @@ def deleteAllProjects(server: TSC.Server, authentication: TSC.TableauAuth):
         sites, pagination_item = server.sites.get()
         for site in sites:
             server.auth.switch_site(site)
-
             req_options = TSC.RequestOptions()
             req_options.filter.add(
                 TSC.Filter(
-                    TSC.RequestOptions.Field.Name,
+                    TSC.RequestOptions.Field.TopLevelProject,
                     TSC.RequestOptions.Operator.Equals,
-                    'Release'
+                    True
                 )
             )
             projects, pagination_item = server.projects.get(
                 req_options=req_options
             )
 
+            for project in projects:
+                if project.name.lower()!='default':
+                    server.projects.delete(project.id)
+                    print('delete project ',project.name)
+                    
+            #get default project
+            req_options = TSC.RequestOptions()
+            req_options.filter.add(
+                TSC.Filter(
+                    TSC.RequestOptions.Field.Name,
+                    TSC.RequestOptions.Operator.Equals,
+                    'Default'
+                )
+            )
+            
+            projects, pagination_item = server.projects.get(
+                req_options=req_options
+            )
+
+            #jika parentnya default maka hapus semua
             if projects:
                 parent = projects[0]
 
@@ -32,7 +51,6 @@ def deleteAllProjects(server: TSC.Server, authentication: TSC.TableauAuth):
                     if (project.parent_id == parent.id):
                         server.projects.delete(project.id)
 
-                # Dani delete workbook in project
                 workbooks, pagination_item = server.workbooks.get()
                 for workbook in workbooks:
                     if (workbook.project_id == parent.id):
@@ -60,7 +78,7 @@ def findTargetProject(server: TSC.Server, node: AnyNode):
     return target_project
 
 
-def createProject(server: TSC.Server, authentication: TSC.TableauAuth, project_node: AnyNode, old_tree_group: AnyNode):
+def createProject(server: TSC.Server, authentication: TSC.TableauAuth, project_node: AnyNode, old_tree_group: AnyNode, project_success, project_failed, logging):
     source_site = util.commonancestors(project_node)[1]
     source_project_ancestor = util.commonancestors(project_node)
     source_project_ancestor = [x.name for x in source_project_ancestor][1:]
@@ -80,34 +98,30 @@ def createProject(server: TSC.Server, authentication: TSC.TableauAuth, project_n
         print("Target site:", target_site.name)
 
         # Cari parent di site baru
-        target_project = findTargetProject(server, project_node)
-        print("Target project:", target_project.id, "")
+        if project_node.parent_id!=None:
+            target_project = findTargetProject(server, project_node)
+            print("Target project:", target_project.id, "")
 
-        new_project_item = TSC.ProjectItem(
-            name=project_node.name,
-            parent_id=target_project.id,
-            content_permissions="LockedToProject"
-        )
-
-        new_project = server.projects.create(new_project_item)
-        print("Project created\n")
-        time.sleep(3)
-
-        # Check if parent release maka set permissions
-        req_options = TSC.RequestOptions()
-        req_options.filter.add(
-            TSC.Filter(
-                TSC.RequestOptions.Field.Name,
-                TSC.RequestOptions.Operator.Equals,
-                'Release'
+            new_project_item = TSC.ProjectItem(
+                name=project_node.name,
+                parent_id=target_project.id,
+                content_permissions="LockedToProject",
+                description=project_node.description
             )
-        )
-
-        release_projects, pagination_item = server.projects.get(
-            req_options=req_options,
-        )
-
-        if release_projects[0].id == new_project_item.parent_id:
+        else:
+            new_project_item = TSC.ProjectItem(
+                name=project_node.name,
+                parent_id=None,
+                content_permissions="LockedToProject",
+                description=project_node.description
+            )
+        
+        new_project = server.projects.create(new_project_item)
+        logging.info("Project Created")
+        print("Project created\n")
+            
+        time.sleep(3)
+        if new_project_item.parent_id is None:
             if project_node.permissions != None:
                 changePermissions(target_site, new_project, project_node.permissions,
                                   server, old_tree_group, 0)

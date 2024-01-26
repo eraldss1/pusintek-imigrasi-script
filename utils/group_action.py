@@ -5,7 +5,7 @@ import time
 from anytree import util, AnyNode, RenderTree, find
 
 
-def createGroup(server: TSC.Server, authentication: TSC.TableauAuth, node: AnyNode, old_tree_group: AnyNode):
+def createGroup(server: TSC.Server, authentication: TSC.TableauAuth, node: AnyNode, old_tree_group: AnyNode, group_success, group_failed, logging):
     # kurang delete group yang ada di server baru, tapi tidak ada di server lama
     # create new group
 
@@ -31,9 +31,17 @@ def createGroup(server: TSC.Server, authentication: TSC.TableauAuth, node: AnyNo
                     )
 
                     if len(server.groups.get(req_option)[0]) == 0:
-                        newG = TSC.GroupItem(name=group.name)
-                        newG = server.groups.create(newG)
-                        print("Create Group:",
-                              newG._id,
-                              newG._name
-                              )
+                            newG = TSC.GroupItem(name=group.name)
+                            try:
+                                newG = server.groups.create(newG)
+                                print("Create Group:",
+                                    newG._id,
+                                    newG._name
+                                )
+                                group_success+=1
+                            except Exception as e:
+                                group_failed+=1
+                            
+    group_info = [group_success, group_failed]
+    return group_info
+                        

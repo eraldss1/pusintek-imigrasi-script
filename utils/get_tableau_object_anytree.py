@@ -5,23 +5,21 @@ from anytree import AnyNode, RenderTree
 from anytree import find
 
 
-def placeWorkbooks(server: TSC.Server, root):
+def placeWorkbooks(server: TSC.Server, root, parent):
     for workbook in TSC.Pager(server.workbooks):
-        parent_id = workbook.project_id
-        parent_node = find(root, lambda node: node.id == parent_id)
+        if (parent.id==workbook.project_id):
+            server.workbooks.populate_permissions(workbook)
 
-        server.workbooks.populate_permissions(workbook)
-
-        workbookitem = AnyNode(
-            type="Workbook",
-            id=workbook.id,
-            name=workbook.name,
-            size=workbook.size,
-            parent_id=workbook.id,
-            parent=parent_node,
-            status="",
-            permission=workbook.permissions,
-        )
+            workbookitem = AnyNode(
+                type="Workbook",
+                id=workbook.id,
+                name=workbook.name,
+                size=workbook.size,
+                parent_id=workbook.id,
+                parent=parent,
+                status="",
+                permission=workbook.permissions,
+            )
 
 
 def recurseProjects(server: TSC.Server, parent):
@@ -37,16 +35,8 @@ def recurseProjects(server: TSC.Server, parent):
     projects, pagination_item = server.projects.get(
         req_options=req_options,
     )
-
+    
     for project in projects:
-        server.projects.populate_permissions(project)
-        server.projects.populate_workbook_default_permissions(project)
-        server.projects.populate_datasource_default_permissions(project)
-        server.projects.populate_flow_default_permissions(project)
-        server.projects.populate_datarole_default_permissions(project)
-        server.projects.populate_metric_default_permissions(project)
-        server.projects.populate_lens_default_permissions(project)
-
         project_node = AnyNode(
             type="Project",
             id=project.id,
@@ -54,13 +44,7 @@ def recurseProjects(server: TSC.Server, parent):
             parent_id=project.parent_id,
             parent=parent,
             status="",
-            permissions=project.permissions,
-            default_workbook_permissions=project.default_workbook_permissions,
-            default_datasource_permissions=project.default_datarole_permissions,
-            default_flow_permissions=project.default_flow_permissions,
-            default_datarole_permissions=project.default_flow_permissions,
-            default_metric_permissions=project.default_metric_permissions,
-            default_lens_permissions=project.default_lens_permissions,
+            description=project.description,
         )
 
         recurseProjects(server, project_node)
@@ -84,7 +68,15 @@ def getTableauObject(server: TSC.Server, authentication: TSC.TableauAuth, root: 
 
             projects, pagination_item = server.projects.get()
             for project in projects:
-                if (project.parent_id == None and project.name == 'Release'):
+                # if (project.parent_id == None and project.name == 'Release'):
+                if (project.parent_id == None):
+                    server.projects.populate_permissions(project)
+                    server.projects.populate_workbook_default_permissions(project)
+                    server.projects.populate_datasource_default_permissions(project)
+                    server.projects.populate_flow_default_permissions(project)
+                    server.projects.populate_datarole_default_permissions(project)
+                    server.projects.populate_metric_default_permissions(project)
+                    server.projects.populate_lens_default_permissions(project)
                     projectitem = AnyNode(
                         type="Project",
                         id=project.id,
@@ -92,10 +84,19 @@ def getTableauObject(server: TSC.Server, authentication: TSC.TableauAuth, root: 
                         parent_id=project.parent_id,
                         parent=nodesite,
                         status="",
+                        description=project.description,
+                        permissions=project.permissions,
+                        default_workbook_permissions=project.default_workbook_permissions,
+                        default_datasource_permissions=project.default_datarole_permissions,
+                        default_flow_permissions=project.default_flow_permissions,
+                        default_datarole_permissions=project.default_flow_permissions,
+                        default_metric_permissions=project.default_metric_permissions,
+                        default_lens_permissions=project.default_lens_permissions,
                     )
 
                     recurseProjects(server, projectitem)
-                    placeWorkbooks(server, root)
+                    
+                    placeWorkbooks(server, root, projectitem)
 
     return root
 
@@ -108,7 +109,8 @@ def getTableauObjectPersonalAccessToken(server: TSC.Server, token: TSC.PersonalA
             id=server.site_id,
             name=token.site_id,
             parent_id="1",
-            parent=root)
+            parent=root,
+            status="")
 
         projects, pagination_item = server.projects.get()
         for project in projects:
@@ -118,7 +120,8 @@ def getTableauObjectPersonalAccessToken(server: TSC.Server, token: TSC.PersonalA
                     id=project.id,
                     name=project.name,
                     parent_id=project.parent_id,
-                    parent=nodesite
+                    parent=nodesite,
+                    status=""
                 )
 
                 recurseProjects(server, projectitem)
