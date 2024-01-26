@@ -15,8 +15,8 @@ from datetime import datetime
 
 
 def config_log():
-    if not os.path.exists("temp"):
-        os.mkdir("temp")
+    if not os.path.exists("log"):
+        os.mkdir("log")
         time.sleep(2)
 
     logging.basicConfig(
